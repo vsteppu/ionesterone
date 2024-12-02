@@ -1,133 +1,82 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
-import { contentImages } from '@/utilities/contentImages';
+import { ref } from 'vue';
+import { useJobStore } from '@/stores/jobStore';
+import { defineProps } from 'vue';
 
-const showText = ref(false)
-const title = ref('First Image')
-const homeImage = ref(0)
-const image = ref(contentImages[0])
+import Search from '@/components/search.vue';
+import Scroll from '@/components/scroll.vue';
+import Description from '@/components/description.vue';
 
-const changeHomeImage = () => {
-  homeImage.value++
-  if(homeImage.value === 3){
-    homeImage.value = 0 
+const props = defineProps(['submit']);
+
+const jobList = ref([]);
+const errorMessage = ref('');
+const jobDescription = ref('');
+const jobGeo = ref('');
+const jobIndustry = ref('');
+const jobType = ref('');
+const jobTitle = ref('');
+const visibleJobId = ref(null);
+const store = useJobStore();
+
+const handleSearch = async (searchQuery, geo, industry) => {
+  try {
+    const response = await fetch(`https://jobicy.com/api/v2/remote-jobs?tag=${searchQuery}&geo=${geo}&industry=${industry}`);
+    const data = await response.json();
+    if (data.jobCount === 0) {
+      errorMessage.value = 'Job not found';
+      jobList.value = [];
+    } else {
+      jobList.value = data.jobs;
+      errorMessage.value = '';
+    }
+  } catch (error) {
+    errorMessage.value = 'An error occurred. Please try again.';
+    console.error(error);
   }
-  showText.value = false;
 }
 
-const onAfterEnter = () => {
-  showText.value = true; // Show text after image transition is complete
-};
+const handleJobClick = (job) => {
+  if (visibleJobId.value === job.id) {
+    visibleJobId.value = null;
+    jobDescription.value = null;
+  } else {
+    visibleJobId.value = job.id;
+    jobTitle.value = job.jobTitle
+    jobGeo.value = '<b>Location: </b> ' + job.jobGeo;
+    jobIndustry.value = '<b>Industry: </b> ' + job.jobIndustry;
+    jobType.value = '<b>Type: </b> ' + job.jobType;
+    jobDescription.value = job.jobDescription;
 
-const currentImage = computed(() => homeImage.value)
-
-onMounted(() => {
-  setInterval(() => {
-    changeHomeImage();
-  }, 7000);
-});
-
-watch(
-  () => currentImage.value,
-  () => {
-    if(currentImage.value === 0) {
-      setTimeout(()=>image.value=contentImages[0],1000)
-    }else if(currentImage.value === 1) {
-      setTimeout(()=>image.value=contentImages[1],1000)
-      title.value='Second Image'
-    }else if(currentImage.value === 2) {
-      setTimeout(()=>image.value=contentImages[2],1000)
-      title.value='third Image'
-    }
   }
-)
+};
+//jobDescription, jobType, jobIndustry, jobGeo
 </script>
 
 <template>
-  <div class="flex justify-center  h-screen overflow-hidden bg-slate-800 ">
-  <img 
-    :src="image" 
-    class="z-0 flex absolute m-auto blur-xl  w-full h-full"
-  >
-    <div 
-      class=" z-10 my-auto top-8 rounded-lg flex h-4/5 relative ">
-      <transition
-        name="slide-in"
-        mode="out-in"
-      >
-          <img 
-            v-if="currentImage === 0" 
-            src="../media/content/1.jpg" 
-            class=" w-full h-full rounded-lg shadow-xl"
-          >
-          <img 
-            v-else-if="currentImage === 1" 
-            src="../media/content/2.jpg" 
-            class=" w-full h-full rounded-lg shadow-xl"
-          >
-          <img 
-            v-else-if="currentImage === 2" 
-            src="../media/content/3.jpg" 
-            class=" w-full h-full rounded-lg shadow-xl"
-          >
-      </transition>
-      <transition
-        name="fade"
-        @after-enter="onAfterEnter"
-        mode="out-in"
-      >
-        <div v-if="currentImage === 0" class=" top-3/4 absolute right-5 text-end text-white">
-            <p class="text-3xl font-bold blur-none uppercase ">Midnight Muse</p>
-            <p class="text-lg font-semibold ">Embracing the warmth of elegance with curls that crown her beauty</p>
-
+  <div class=" flex justify-center relative top-28 ">
+    <div class="py-5 px-16 rounded-lg flex flex-col justify-center bg-gray-100 w-4/5 shadow-xl">
+      <h1 class=" text-center font-semibold text-xl m-8 ">Job Search engine</h1>
+      <div>
+        <Search @submit="handleSearch" />
+        <p v-if="errorMessage">{{ errorMessage }}</p>
+        <div class="flex">
+          <div class="w-2/5 mr-2 ">
+            <Scroll v-if="jobList.length" :jobList="jobList" @select="handleJobClick" />
+          </div>
+          <div class="w-3/5 my-2">
+            <Description 
+            :visibleJobId="visibleJobId"
+            :jobTitle="jobTitle"
+            :jobIndustry="jobIndustry"
+            :jobType="jobType"
+            :jobGeo="jobGeo"
+            :jobDescription="jobDescription" 
+            />
+             <!-- class="rounded-xl bg-gray-200 p-3 "  -->
+          </div>
         </div>
-        <div v-else-if="currentImage === 1" class=" top-3/4 absolute right-5 text-end text-black ">
-          <p class="text-3xl font-bold blur-none uppercase ">Autumn Connection</p>
-          <p class="text-lg font-semibold ">When falling leaves reveal budding feelings</p>
-        </div>
-        <div v-else-if="currentImage === 2" class=" top-3/4 absolute right-5 text-end text-white ">
-          <p class="text-3xl font-bold blur-none uppercase ">Parisian Grace</p>
-          <p class="text-lg font-semibold ">A vision in pink, where elegance meets the city of love.</p>
-        </div>
-      </transition>
+      </div>
     </div>
   </div>
-  <div>
-  </div>
-
 </template>
-
-
-<style scoped>
-.slide-in-enter-active,
-.slide-in-leave-active {
-  transition: all 1s ease-out;
-}
-
-.slide-in-enter-from {
-  opacity: 0;
-  transform: translateX(300px);
-}
-
-.slide-in-leave-to {
-  opacity: 0;
-  transform: translateX(-300px);
-}
-
-.fade-enter-active {
-  transition: opacity 2s ease;
-}
-.fade-leave-active {
-  transition: opacity 1s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to  {
-  opacity: 0;
-}
-.fade-enter-to,
-.fade-leave-from  {
-  opacity: 1;
-}
-
-</style>

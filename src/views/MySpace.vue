@@ -66,7 +66,7 @@ const toggleReauthenticatePasswordVisibiliti = () => {
 <template>
   <div class="flex justify-center items-center relative top-20 inset-0  ">
     <div class="flex mx-auto w-4/5 py-8 px-20 rounded-lg bg-gray-100 shadow-xl">
-      <img src="@/media/Logo001.ico" alt="Image" class="bg-gray-200 h-28 rounded-lg mr-4">
+      <img src="@/media/Logo001.png" alt="Image" class="bg-gray-200 h-28 rounded-lg mr-4">
       <div v-if="authStore.user" class="grid place-items-start" > My Space:
         {{ authStore.user.email }}
 

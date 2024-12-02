@@ -1,76 +1,42 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import { ref, onMounted, computed, watch } from 'vue';
+import { useAuthStore } from '@/stores/authStore.js';
+import Sidebar from '@/components/sidebar.vue';
+import { isSocialMediaAppBrowser } from '@/utilities/utilities';
+import { onMounted } from 'vue';
 
-const router = useRouter()
+const userStore = useAuthStore();
+const isSocialMediaBrowser = isSocialMediaAppBrowser();
 
-const show = ref(true)
+onMounted(()=>{
+  console.log(isSocialMediaBrowser.ua)
+}
 
-const currentLocation = computed(()=> router.currentRoute.value.path)
-
-watch (
-  currentLocation,
-  ()=> { 
-    console.log(currentLocation.value)
-    if(currentLocation.value == '/'){ 
-      show.value = true 
-    }else{
-      show.value = false 
-    }
-  }
-  )
-
+)
 </script>
 
 <template>
+
+  {{ isSocialMediaBrowser.ua }}
+  {{ isSocialMediaBrowser }}
   <div class="absolute top-0 flex w-full items-center px-32 justify-between shadow-md z-10">
-    <div 
-    :class=" show ? 'text-white' : 'text-black'"
-    class="content-between mx-auto md:ml-5 text-md font-sl uppercase md:flex sm:inline hidden">
+    <div class=" content-between mx-auto md:ml-5 text-md font-sl uppercase md:flex sm:inline hidden">
       <router-link to="/" class="w-32 flex items-center justify-center">
-        <img 
-        src="@/media/Logo001.ico" 
-        alt="Logo" 
-        :class=" show ? 'invert' : ''"
-        class="h-12 mx-5 my-2">
+        <img src="@/media/Logo001.png" alt="Logo" class="h-12 mx-5 my-2">
       </router-link>
-      <router-link 
-        to="/" 
-        class="nav-item "
-      >
-        Home
-      </router-link>
-      <router-link 
-        to="/gallery" 
-        class="nav-item sm:inline hidden"
-      >
-        Gallery
-      </router-link>
-      <router-link 
-        to="/about" 
-        class="nav-item sm:inline hidden"
-      >
-        About
-      </router-link>
-      <router-link 
-        to="/Contacts" 
-        class="nav-item sm:inline hidden"
-      >
-        Contacts
-      </router-link>
-      <div 
-        :class=" show ? 'bg-white' : 'bg-black'"
-        class="active bottom-0"
-      >
-      </div>
+      <router-link to="/" class="nav-item ">Home</router-link>
+      <router-link to="/Saved" class="nav-item sm:inline hidden">Saved</router-link>
+      <router-link v-if="!userStore.isAuthenticated()" to="/Login" class="nav-item sm:inline hidden">Log
+        in</router-link>
+      <router-link v-if="!userStore.isAuthenticated()" to="/Register"
+        class="nav-item sm:inline hidden">Register</router-link>
+      <router-link v-if="userStore.isAuthenticated()" to="/MySpace" class="nav-item sm:inline hidden">My
+        Space</router-link>
+      <div class="active bottom-0"></div>
       <!--<router-link to="/Mobileapp" class="nav-item">MobileApp</router-link>-->
     </div>
-    <div :class=" show ? 'invert' : ''">
-      <a href="https://www.instagram.com/ionesterone/">
-        <img 
-        src="@/media/Insta.png" 
-        alt="Instagram link"
-        class="h-8 mx-5 my-2 sm:inline hidden"></a>
+    <div>
+      <a href=""><img src="@/media/Insta.png" alt="Instagram link"
+          class="opacity-50 h-8 mx-5 my-2 sm:inline hidden"></a>
     </div>
   </div>
 <!--   <Sidebar class="md:hidden"/> -->
@@ -90,6 +56,7 @@ watch (
   position: absolute;
   height: 1px;
   width: 8rem;
+  background-color: black;
   transition: transform 0.2s;
 }
 

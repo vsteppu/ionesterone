@@ -22,8 +22,8 @@ export const isValidPassword = () => ({
     const isFacebook = ua.includes('facebook') || ua.includes('fbav');
     const isThreads = ua.includes('threads');
     const isYouTube = ua.includes('youtube');
-
-    return ua || isInstagram || isLinkedIn || isTikTok ||isThreads|| isYouTube || isFacebook;
+    
+    return isInstagram || isLinkedIn || isTikTok ||isThreads|| isYouTube || isFacebook;
   };
 
 
